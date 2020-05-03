@@ -1,0 +1,4 @@
+-list files that were changed
+-enable regex support
+-prevent multiple downloads of the same file
+-add recursive option

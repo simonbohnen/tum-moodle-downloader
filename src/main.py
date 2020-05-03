@@ -4,6 +4,8 @@ import sys
 from getpass import getpass
 import authentication
 import course_retrieval
+import argparse
+import update_folder
 
 
 def parse_args() -> dict:
@@ -51,7 +53,10 @@ def setup_credentials():
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    # arguments = parse_args()
+    # parser = argparse.ArgumentParser(description="Download files from the TUM Moodle.")
+    # parser.add_argument('-r', '--recursive', help='Recursively update all subdirectories.')
+
     setup_credentials()
     session = authentication.start_session(
         os.environ['USERNAME'],
@@ -61,20 +66,25 @@ if __name__ == "__main__":
         print('Could not start session.')
         exit(1)
 
-    course_name = args['course']
-    course = course_retrieval.get_course(session, course_name)
-    if course_name is not None and course is None:
-        print('Could not find course: ' + course_name)
-        exit(1)
-    if args['mode'] == 'list':
-        if course_name is None:
-            print('Listing available courses: ')
-            course_retrieval.list_courses(session)
-            exit(0)
-        else:
-            course.list_all_resources()
-            exit(0)
-    elif args['mode'] == 'download':
-        file = args['file']
-        path = './' if args['path'] is None else args['path']
-        course.download_resource(file, path)
+    update_folder.update_folder(session, os.getcwd())
+
+    # course_name = arguments['course']
+    # course = None
+    # if course_name is not None:
+    #     course = course_retrieval.get_course(session, course_name)
+    #     if course is None:
+    #         print('Could not find course: ' + course_name)
+    #         exit(1)
+    #
+    # if arguments['mode'] == 'list':
+    #     if course_name is None:
+    #         print('Listing available courses: ')
+    #         course_retrieval.list_courses(session)
+    #         exit(0)
+    #     else:
+    #         course.list_all_resources()
+    #         exit(0)
+    # elif arguments['mode'] == 'download':
+    #     file = arguments['file']
+    #     path = './' if arguments['path'] is None else arguments['path']
+    #     course.download_resource(file, path)

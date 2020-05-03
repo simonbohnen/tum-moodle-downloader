@@ -35,6 +35,7 @@ class Course:
             url = file.parent['href']
             self._download_file(url, os.path.join(path, dir_name))
 
+    # TODO assignments can have multiple files
     def _download_assignment(self, url, path):
         print('Extracting file from assignment...')
         soup = BeautifulSoup(self.session.get(url).content, 'html.parser')
@@ -54,9 +55,13 @@ class Course:
             return 'folder'
         elif group == ['activity', 'assign', 'modtype_assign', '']:  # Found resource is an assignment
             return 'assignment'
+        elif group == ['activity', 'url', 'modtype_url', '']:
+            # TODO what to do with other types?
+            if 'pdf' in resource.find('img')['src']:
+                return 'url'
         return 'other (e.g. quiz, forum, ...)'
 
-    def download_resource(self, name, path):
+    def download_resources(self, name, path='./'):
         """
         Downloads all course resources matching the given name to the given path.
         Currently supports files, folders and assignments.
@@ -76,7 +81,7 @@ class Course:
                 found_name = resource.find('span', class_='instancename').contents[0].lower()
                 if name.lower() in found_name:
                     resource_type = self._get_resource_type(resource)
-                    if resource_type == 'file':
+                    if resource_type == 'file' or resource_type == 'url':
                         print('Found file: ' + found_name)
                         found = True
                         self._download_file(resource.find('a')['href'], path)
@@ -89,7 +94,7 @@ class Course:
                         found = True
                         self._download_assignment(resource.find('a')['href'], path)
         if not found:
-            print('No resources found matching ' + name )
+            print('No resources found matching ' + name)
 
     def download_latest_resources(self):
         latest_section = self.soup.find('li', class_='section main clearfix current')
@@ -98,7 +103,7 @@ class Course:
             print('No new resources found')
         for resource in latest_resources:
             resource_name = resource.find('span', class_='instancename').contents[0]
-            self.download_resource(resource_name)
+            self.download_resources(resource_name)
 
     def list_all_resources(self):
         print('Listing all available resources:\n')
@@ -119,4 +124,3 @@ class Course:
         for resource in latest_resources:
             resource_type = self._get_resource_type(resource)
             print(resource.find('span', class_='instancename').contents[0] + ' ---- type: ' + resource_type)
-
